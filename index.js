@@ -5,8 +5,8 @@ const app = express();
 const PORT = 3000;
 
 const BRAVE_AUTH = {
-    id: "08c72b0ff3497d44280d6e0e6f523bb46b9b",
-    symmetric_key: "ZwHmuY9BW-9k44lNB_w0vPbmSJRz7PhdmIfj_ilAey4"
+    id: "your_id_here",
+    symmetric_key: "your_key_here"
 };
 
 app.use(cors());
@@ -72,4 +72,5 @@ app.post('/proxy-stream', async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Proxy server running on port ${PORT}`);
+
 });
