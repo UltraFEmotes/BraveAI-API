@@ -1,4 +1,4 @@
-# Brave AI Stream
+# Brave AI API
 
 A Node.js proxy server and polished chat UI that taps directly into Brave Search's undocumented live-streaming AI API. The server bypasses browser CORS restrictions and pipes real-time NDJSON responses to a frontend that renders markdown, inline citations, source chips, and follow-up suggestions.
 
