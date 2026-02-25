@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brave AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg: #0d0d0f;
+            --surface: #141416;
+            --surface-2: #1c1c1f;
+            --surface-3: #242428;
+            --border: rgba(255,255,255,0.07);
+            --border-hover: rgba(255,255,255,0.14);
+            --text-primary: #f0ede8;
+            --text-secondary: #8a8780;
+            --text-muted: #4a4845;
+            --accent: #fb542b;
+            --accent-dim: rgba(251,84,43,0.15);
+            --accent-glow: rgba(251,84,43,0.25);
+            --user-bg: #1a1a1d;
+            --code-bg: #0a0a0c;
+            --radius: 14px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { height: 100%; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── Header ── */
+        header {
+            flex-shrink: 0;
+            height: 56px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+            position: relative;
+            z-index: 20;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brave-logo {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Instrument Serif', serif;
+            font-size: 15px;
+            color: white;
+            font-style: italic;
+            box-shadow: 0 0 16px var(--accent-glow);
+        }
+
+        .header-title {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.15rem;
+            letter-spacing: 0.01em;
+            color: var(--text-primary);
+        }
+
+        .header-title span {
+            color: var(--accent);
+            font-style: italic;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .icon-btn:hover {
+            background: var(--surface-2);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+        .icon-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+        /* ── Chat container ── */
+        #chat-container {
+            flex: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            padding-bottom: 140px;
+        }
+
+        #chat-container::-webkit-scrollbar { width: 4px; }
+        #chat-container::-webkit-scrollbar-track { background: transparent; }
+        #chat-container::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 4px; }
+
+        /* ── Welcome screen ── */
+        #welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 200px);
+            text-align: center;
+            padding: 40px 20px;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .welcome-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--accent);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Instrument Serif', serif;
+            font-size: 32px;
+            color: white;
+            font-style: italic;
+            margin-bottom: 24px;
+            box-shadow: 0 0 40px var(--accent-glow), 0 0 80px rgba(251,84,43,0.1);
+        }
+
+        .welcome-heading {
+            font-family: 'Instrument Serif', serif;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            line-height: 1.2;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .welcome-heading em {
+            color: var(--accent);
+            font-style: italic;
+        }
+
+        .welcome-sub {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            max-width: 360px;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .starter-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 32px;
+            max-width: 480px;
+            width: 100%;
+        }
+
+        .starter-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .starter-card:hover {
+            background: var(--surface-2);
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
+        }
+        .starter-card .starter-icon {
+            font-size: 18px;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .starter-card .starter-text {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* ── Message rows ── */
+        .message-row {
+            padding: 28px 20px;
+            display: flex;
+            justify-content: center;
+            animation: msgIn 0.3s ease both;
+        }
+
+        @keyframes msgIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-row.user {
+            background: var(--user-bg);
+            border-top: 1px solid var(--border);
+        }
+
+        .message-row.assistant {
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+        }
+
+        .message-content-wrapper {
+            max-width: 720px;
+            width: 100%;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Instrument Serif', serif;
+            font-size: 14px;
+            color: white;
+            flex-shrink: 0;
+            font-style: italic;
+            margin-top: 2px;
+        }
+        .user .avatar {
+            background: var(--surface-3);
+            color: var(--text-secondary);
+            font-style: normal;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+        .assistant .avatar {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .message-body {
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        .message-label {
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .message-text {
+            line-height: 1.75;
+            font-size: 0.97rem;
+            color: var(--text-primary);
+            overflow-wrap: break-word;
+            font-weight: 300;
+        }
+
+        .message-text p { margin-bottom: 1rem; }
+        .message-text p:last-child { margin-bottom: 0; }
+
+        .message-text h1, .message-text h2, .message-text h3 {
+            font-family: 'Instrument Serif', serif;
+            font-weight: 400;
+            color: var(--text-primary);
+            margin: 1.2rem 0 0.6rem;
+            line-height: 1.3;
+        }
+        .message-text h1 { font-size: 1.5rem; }
+        .message-text h2 { font-size: 1.25rem; }
+        .message-text h3 { font-size: 1.1rem; }
+
+        .message-text strong { font-weight: 500; color: var(--text-primary); }
+        .message-text em { font-style: italic; color: #b8b4ae; }
+
+        .message-text ul, .message-text ol {
+            padding-left: 1.4rem;
+            margin-bottom: 1rem;
+        }
+        .message-text li { margin-bottom: 0.35rem; }
+
+        .message-text a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(251,84,43,0.3);
+            transition: border-color 0.15s;
+        }
+        .message-text a:hover { border-color: var(--accent); }
+
+        .message-text pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .message-text code {
+            background: var(--surface-2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            color: #e6a070;
+        }
+
+        .message-text pre code {
+            background: none;
+            padding: 0;
+            color: #c8c4bc;
+        }
+
+        .message-text blockquote {
+            border-left: 2px solid var(--accent);
+            padding-left: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        /* ── Citations ── */
+        .citation {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: var(--surface-2);
+            padding: 1px 7px 1px 5px;
+            border-radius: 20px;
+            font-size: 0.72em;
+            font-weight: 500;
+            text-decoration: none;
+            color: var(--text-secondary);
+            margin: 0 2px;
+            border: 1px solid var(--border);
+            vertical-align: text-top;
+            transition: all 0.15s;
+        }
+        .citation:hover {
+            background: var(--surface-3);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+        .citation img {
+            width: 11px;
+            height: 11px;
+            border-radius: 2px;
+            opacity: 0.8;
+        }
+        .citation-num {
+            color: var(--accent);
+            font-size: 0.95em;
+        }
+
+        /* ── Sources panel ── */
+        .sources-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+
+        .source-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.15s;
+            max-width: 200px;
+        }
+        .source-chip:hover {
+            background: var(--surface-2);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+        .source-chip img {
+            width: 13px;
+            height: 13px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .source-chip span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ── Follow-ups ── */
+        .followups-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 16px;
+        }
+
+        .followup-pill {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 0.82em;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: all 0.18s;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 400;
+            line-height: 1.3;
+            text-align: left;
+        }
+        .followup-pill:hover {
+            background: var(--surface-2);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+
+        /* ── Typing indicator ── */
+        .typing-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 0;
+        }
+        .typing-dots span {
+            width: 5px;
+            height: 5px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: dot-bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-dots span:nth-child(1) { animation-delay: 0s; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.16s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.32s; }
+        @keyframes dot-bounce {
+            0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ── Input area ── */
+        .input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            padding: 16px 20px 20px;
+            background: linear-gradient(180deg, transparent 0%, var(--bg) 35%);
+            display: flex;
+            justify-content: center;
+        }
+
+        .input-wrapper {
+            max-width: 720px;
+            width: 100%;
+        }
+
+        .input-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 4px 4px 4px 18px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-box:focus-within {
+            border-color: rgba(251,84,43,0.4);
+            box-shadow: 0 0 0 3px rgba(251,84,43,0.07);
+        }
+
+        #prompt-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.97rem;
+            font-weight: 300;
+            padding: 14px 0;
+            resize: none;
+            max-height: 160px;
+            line-height: 1.55;
+        }
+
+        #prompt-input::placeholder { color: var(--text-muted); }
+
+        .submit-btn {
+            width: 38px;
+            height: 38px;
+            background: var(--accent);
+            border: none;
+            border-radius: 11px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-bottom: 3px;
+            transition: all 0.15s;
+        }
+        .submit-btn:hover { background: #e84820; transform: scale(1.04); }
+        .submit-btn:disabled {
+            background: var(--surface-3);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+        .submit-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+        .input-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 2px 0;
+        }
+
+        .input-hint {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .mini-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .mini-btn:hover {
+            background: var(--surface-2);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+        .mini-btn.active {
+            background: var(--accent-dim);
+            border-color: rgba(251,84,43,0.3);
+            color: var(--accent);
+        }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+            animation: modalIn 0.2s ease both;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+
+        .modal-title {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            transition: all 0.15s;
+        }
+        .modal-close:hover { background: var(--surface-2); color: var(--text-primary); }
+
+        .form-group { margin-bottom: 16px; }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .form-group input[type="text"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 300;
+            outline: none;
+            transition: border-color 0.15s;
+            appearance: none;
+        }
+        .form-group input[type="text"]:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: rgba(251,84,43,0.4);
+        }
+        .form-group select option { background: var(--surface-2); }
+        .form-group textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .toggle-label {
+            font-size: 0.9rem;
+            font-weight: 300;
+            color: var(--text-primary);
+        }
+
+        .toggle {
+            width: 38px;
+            height: 22px;
+            background: var(--surface-3);
+            border-radius: 11px;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .toggle.on { background: var(--accent); }
+        .toggle::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        .toggle.on::after { transform: translateX(16px); }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 22px;
+        }
+        .btn-cancel {
+            flex: 1;
+            padding: 10px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.87rem;
+            transition: all 0.15s;
+        }
+        .btn-cancel:hover { background: var(--surface-3); color: var(--text-primary); }
+        .btn-save {
+            flex: 2;
+            padding: 10px;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.87rem;
+            font-weight: 500;
+            transition: background 0.15s;
+        }
+        .btn-save:hover { background: #e84820; }
+
+        /* ── Toast ── */
+        #toast {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s;
+            z-index: 50;
+            white-space: nowrap;
+        }
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-brand">
+            <div class="brave-logo">B</div>
+            <span class="header-title">Brave <span>AI</span></span>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="clearChat()" title="Clear conversation">
+                <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            </button>
+            <button class="icon-btn" onclick="openSettings()" title="Settings">
+                <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94zM12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Settings</h2>
+                <button class="modal-close" onclick="closeSettings()">✕</button>
+            </div>
+
+            <div class="form-group">
+                <label>Language</label>
+                <input type="text" id="set-language" value="en" placeholder="en, fr, es, de...">
+            </div>
+
+            <div class="form-group">
+                <label>Safe Search</label>
+                <select id="set-safesearch">
+                    <option value="off">Off</option>
+                    <option value="moderate" selected>Moderate</option>
+                    <option value="strict">Strict</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Follow-up Questions</label>
+                <div class="toggle-group">
+                    <span class="toggle-label">Show suggested follow-ups</span>
+                    <button class="toggle on" id="followups-toggle" onclick="this.classList.toggle('on')"></button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>System Prompt</label>
+                <textarea id="set-prompt" placeholder="Custom instructions for the AI…"></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
+                <button class="btn-save" onclick="saveSettings()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="chat-container">
+        <div id="welcome">
+            <div class="welcome-icon">B</div>
+            <h1 class="welcome-heading">Search, <em>reimagined.</em></h1>
+            <p class="welcome-sub">Ask anything. Brave AI searches the web and gives you real answers with sources.</p>
+            <div class="starter-grid">
+                <div class="starter-card" onclick="startStream('What are the latest AI breakthroughs this week?')">
+                    <span class="starter-icon">⚡</span>
+                    <div class="starter-text">Latest AI breakthroughs this week</div>
+                </div>
+                <div class="starter-card" onclick="startStream('Explain quantum computing simply')">
+                    <span class="starter-icon">🔬</span>
+                    <div class="starter-text">Explain quantum computing simply</div>
+                </div>
+                <div class="starter-card" onclick="startStream('Best programming languages to learn in 2025')">
+                    <span class="starter-icon">💻</span>
+                    <div class="starter-text">Best languages to learn in 2025</div>
+                </div>
+                <div class="starter-card" onclick="startStream('What is happening in the world today?')">
+                    <span class="starter-icon">🌍</span>
+                    <div class="starter-text">What's happening in the world today?</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-container">
+        <div class="input-wrapper">
+            <div class="input-box">
+                <textarea id="prompt-input" rows="1" placeholder="Ask Brave AI anything…" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+                <button class="submit-btn" id="submit-btn" onclick="startStream()">
+                    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </button>
+            </div>
+            <div class="input-footer">
+                <span class="input-hint">Enter to send · Shift+Enter for newline</span>
+                <div class="input-actions">
+                    <button class="mini-btn" id="followups-quick" onclick="toggleFollowupsQuick()" title="Toggle follow-up suggestions">Follow-ups</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        marked.setOptions({ breaks: true, gfm: true });
+
+        const chatContainer = document.getElementById('chat-container');
+        const submitBtn = document.getElementById('submit-btn');
+        const inputField = document.getElementById('prompt-input');
+        const settingsModal = document.getElementById('settings-modal');
+
+        let currentTextBuffer = "";
+        let currentMessageNode = null;
+        let currentFollowupsNode = null;
+        let currentSourcesNode = null;
+        let sourcesMap = {};
+
+        let citationsMap = {};
+        let citationCount = 0;
+
+        let conversationHistory = [];
+        const MAX_HISTORY_TURNS = 3;
+
+        let appSettings = {
+            language: 'en',
+            safesearch: 'moderate',
+            followups: true,
+            systemPrompt: ''
+        };
+
+        // ── Auto-resize textarea
+        function autoResize(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+        }
+
+        // ── Key handler
+        function handleKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                startStream();
+            }
+        }
+
+        // ── Toast
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2200);
+        }
+
+        // ── Clear chat
+        function clearChat() {
+            chatContainer.innerHTML = '';
+            chatContainer.appendChild(createWelcome());
+            conversationHistory = [];
+            showToast('Conversation cleared');
+        }
+
+        function createWelcome() {
+            const el = document.getElementById('welcome');
+            if (el) return el;
+            const div = document.createElement('div');
+            div.id = 'welcome';
+            div.innerHTML = `
+                <div class="welcome-icon">B</div>
+                <h1 class="welcome-heading">Search, <em>reimagined.</em></h1>
+                <p class="welcome-sub">Ask anything. Brave AI searches the web and gives you real answers with sources.</p>`;
+            return div;
+        }
+
+        // ── Quick follow-ups toggle
+        function toggleFollowupsQuick() {
+            appSettings.followups = !appSettings.followups;
+            const btn = document.getElementById('followups-quick');
+            btn.classList.toggle('active', appSettings.followups);
+            showToast(appSettings.followups ? 'Follow-ups enabled' : 'Follow-ups disabled');
+        }
+
+        // ── Settings
+        function openSettings() {
+            document.getElementById('set-language').value = appSettings.language;
+            document.getElementById('set-safesearch').value = appSettings.safesearch;
+            const toggle = document.getElementById('followups-toggle');
+            toggle.classList.toggle('on', appSettings.followups);
+            document.getElementById('set-prompt').value = appSettings.systemPrompt;
+            settingsModal.style.display = 'flex';
+        }
+
+        function closeSettings() { settingsModal.style.display = 'none'; }
+
+        function saveSettings() {
+            appSettings.language = document.getElementById('set-language').value || 'en';
+            appSettings.safesearch = document.getElementById('set-safesearch').value;
+            appSettings.followups = document.getElementById('followups-toggle').classList.contains('on');
+            appSettings.systemPrompt = document.getElementById('set-prompt').value;
+            closeSettings();
+            showToast('Settings saved');
+        }
+
+        settingsModal.addEventListener('click', e => {
+            if (e.target === settingsModal) closeSettings();
+        });
+
+        // ── Create message element
+        function createMessageElement(role, content = "") {
+            const welcome = document.getElementById('welcome');
+            if (welcome) welcome.remove();
+
+            const row = document.createElement('div');
+            row.className = `message-row ${role}`;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'message-content-wrapper';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.innerText = role === 'user' ? 'You' : 'B';
+
+            const body = document.createElement('div');
+            body.className = 'message-body';
+
+            const label = document.createElement('div');
+            label.className = 'message-label';
+            label.innerText = role === 'user' ? 'You' : 'Brave AI';
+
+            const textDiv = document.createElement('div');
+            textDiv.className = 'message-text';
+
+            const sourcesDiv = document.createElement('div');
+            sourcesDiv.className = 'sources-bar';
+
+            const followupsDiv = document.createElement('div');
+            followupsDiv.className = 'followups-container';
+
+            if (role === 'user') {
+                textDiv.innerText = content;
+            } else {
+                textDiv.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>`;
+                currentFollowupsNode = followupsDiv;
+                currentSourcesNode = sourcesDiv;
+            }
+
+            body.appendChild(label);
+            body.appendChild(textDiv);
+            body.appendChild(sourcesDiv);
+            body.appendChild(followupsDiv);
+
+            wrapper.appendChild(avatar);
+            wrapper.appendChild(body);
+            row.appendChild(wrapper);
+            chatContainer.appendChild(row);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            return textDiv;
+        }
+
+        // ── Render
+        function renderSafeText() {
+            let html = marked.parse(currentTextBuffer);
+            for (const [placeholder, citationHtml] of Object.entries(citationsMap)) {
+                html = html.replace(new RegExp(escapeRegex(placeholder), 'g'), citationHtml);
+            }
+            currentMessageNode.innerHTML = html + `<div class="typing-dots"><span></span><span></span><span></span></div>`;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+        // ── Stream
+        async function startStream(customPrompt = null) {
+            const prompt = customPrompt || inputField.value.trim();
+            if (!prompt) return;
+
+            createMessageElement('user', prompt);
+
+            inputField.value = '';
+            inputField.style.height = 'auto';
+            submitBtn.disabled = true;
+
+            currentTextBuffer = '';
+            citationsMap = {};
+            citationCount = 0;
+            sourcesMap = {};
+            currentMessageNode = createMessageElement('assistant');
+
+            const payload = {
+                q: prompt,
+                history: conversationHistory.slice(-(MAX_HISTORY_TURNS * 2)),
+                language: appSettings.language,
+                safesearch: appSettings.safesearch,
+                followups: appSettings.followups,
+                system_prompt: appSettings.systemPrompt
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/proxy-stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let chunkBuffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        finalizeMessage(prompt);
+                        break;
+                    }
+                    chunkBuffer += decoder.decode(value, { stream: true });
+                    const lines = chunkBuffer.split('\n');
+                    chunkBuffer = lines.pop();
+                    for (const line of lines) {
+                        if (line.trim()) {
+                            try { processEvent(JSON.parse(line)); } catch(e) {}
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Stream error:', err);
+                currentMessageNode.innerHTML = `<span style="color:#ef4444;font-size:.9rem;">⚠ Cannot connect to the proxy server. Make sure Node.js is running on port 3000.</span>`;
+            } finally {
+                submitBtn.disabled = false;
+                inputField.focus();
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+
+        function finalizeMessage(prompt) {
+            let html = marked.parse(currentTextBuffer);
+            for (const [placeholder, citationHtml] of Object.entries(citationsMap)) {
+                html = html.replace(new RegExp(escapeRegex(placeholder), 'g'), citationHtml);
+            }
+            currentMessageNode.innerHTML = html;
+
+            // Render sources bar
+            if (Object.keys(sourcesMap).length > 0 && currentSourcesNode) {
+                Object.values(sourcesMap).forEach(src => {
+                    const chip = document.createElement('a');
+                    chip.className = 'source-chip';
+                    chip.href = src.url;
+                    chip.target = '_blank';
+                    chip.title = src.title;
+                    const faviconUrl = src.favicon || '';
+                    chip.innerHTML = faviconUrl
+                        ? `<img src="${faviconUrl}" onerror="this.style.display='none'"><span>${src.title || src.url}</span>`
+                        : `<span>${src.title || src.url}</span>`;
+                    currentSourcesNode.appendChild(chip);
+                });
+            }
+
+            conversationHistory.push({ role: 'user', content: prompt });
+            const clean = currentTextBuffer.replace(/\[\[CIT_\d+\]\]/g, '');
+            conversationHistory.push({ role: 'assistant', content: clean.trim() });
+        }
+
+        // ── Event processor
+        function processEvent(data) {
+            switch (data.type) {
+                case 'text_delta':
+                    currentTextBuffer += data.delta;
+                    renderSafeText();
+                    break;
+
+                case 'augment_with_inline_citation':
+                    citationCount++;
+                    const favicon = data.favicon || '';
+                    const placeholder = `[[CIT_${citationCount}]]`;
+                    const citHtml = `<a href="${data.url}" class="citation" target="_blank" title="${data.title || data.url}">${favicon ? `<img src="${favicon}" onerror="this.style.display='none'">` : ''}<span class="citation-num">${citationCount}</span></a>`;
+                    citationsMap[placeholder] = citHtml;
+                    currentTextBuffer += placeholder;
+                    // Store for sources bar
+                    sourcesMap[citationCount] = { url: data.url, title: data.title || data.url, favicon };
+                    renderSafeText();
+                    break;
+
+                case 'followups':
+                    if (!appSettings.followups) break;
+                    data.followups.forEach(q => {
+                        const pill = document.createElement('button');
+                        pill.className = 'followup-pill';
+                        pill.innerText = q;
+                        pill.onclick = () => startStream(q);
+                        currentFollowupsNode.appendChild(pill);
+                    });
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
